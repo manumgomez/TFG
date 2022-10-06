@@ -1,0 +1,314 @@
+<html>
+  <head>
+    <script>
+      // WebXR requires https: to work so ensure redirected if needed.
+      if (
+        location.hostname !== "localhost" &&
+        window.location.protocol === "http:"
+      )
+        window.location.protocol = "https:";
+    </script>
+    <!-- the AFrame library -->
+    <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@b61cf9a7e46a86119823625634a7b4f5098cb443/dist/aframe-master.min.js"></script>
+    <!-- <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <!-- include a default environemnt which makes VR  look nice, https://github.com/feiss/aframe-environment-component -->
+    <!--<script src="https://unpkg.com/aframe-environment-component@1.3.1/dist/aframe-environment-component.min.js"></script>-->
+    <!--<script src="https://github.com/jeromeetienne/AR.js/blob/024318c67121bd57045186b83b42f10c6560a34a/aframe/build/aframe-ar.js"></script>-->
+    <script src="main.js"></script>
+    <style>
+      body {
+        font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS",
+          sans-serif;
+      }
+
+      #dom-overlay-message {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        padding: 1em;
+        background: #33333355;
+        border-top: 5px solid #ffffff55;
+        color: white;
+      }
+
+      #overlay .b1 {
+        position: absolute;
+        bottom: 1em;
+        left: 20%;
+        padding: 1em;
+        appearance: none;
+        background: #00000055;
+        border: 3px solid white;
+        border-radius: 1em;
+        margin: 1em 1em 0 0;
+        color: white;
+      }
+      #overlay .b2 {
+        position: absolute;
+        bottom: 1em;
+        left: 60%;
+        padding: 1em;
+        appearance: none;
+        background: #00000055;
+        border: 3px solid white;
+        border-radius: 1em;
+        margin: 1em 1em 0 0;
+        color: white;
+      }
+    </style>
+  </head>
+
+  <body>
+    <a-scene
+      anchors-system
+      xr-image-tracker
+      webxr="requiredFeatures:  image-tracking,dom-overlay, anchors, hit-test, local-floor; overlayElement: #overlay"
+      arjs="sourceWidth:1280; sourceHeight:960; displayWidth: 1280; displayHeight: 960;"
+    >
+      <a-assets>
+        <a-mixin
+          id="tile"
+          geometry="primitive: box; depth: 0.2; width: 1; height: 1"
+          material=""
+        >
+        </a-mixin>
+        <a-mixin
+          id="animations"
+          animation__click="property: components.material.material.color; type: color; to: blue; startEvents: click; dur: 500"
+          ;
+        ></a-mixin>
+        <a-asset-item id="robot" src="Robot.gltf"></a-asset-item>
+        <img
+          id="hiro"
+          src="https://cdn.glitch.com/170bb543-c9df-448f-aced-de914aeedbba%2Fhiro.png?v=1593042338383"
+        />
+
+        <img id="forw" src="markers/ForwMarker.png" />
+        <img id="jump" src="markers/JumpMarker.png" />
+        <img id="right" src="markers/RightMarker.png" />
+        <img id="left" src="markers/LeftMarker.png" />
+        <img id="goalB" src="markers/GoalBMarker.png" />
+        <img id="highB" src="markers/HighBMarker.png" />
+        <img id="invisB" src="markers/InvisBMarker.png" />
+        <img id="jumpB" src="markers/JumpBMarker.png" />
+        <img id="normalB" src="markers/NormalBMarker.png" />
+      </a-assets>
+      <a-entity
+        id="tablero"
+        position="0 -0.5 0"
+        scale="0.1 0.1 0.1"
+        rotation="0 0 0"
+      >
+        <a-text
+          id="mapText"
+          value="Mapa Completado"
+          scale="3 3 3"
+          position="-2.25 4 0"
+          visible="false"
+        ></a-text>
+        <a-plane
+          board
+          color="black"
+          position="-4.5 0 -4.5"
+          height="0"
+          width="0"
+          rotation="90 0 0"
+        ></a-plane>
+        <a-entity
+          id="player"
+          gltf-model="#robot"
+          position="0.5 0.85 3.5"
+          rotation="0 180 0"
+          scale="2.5 2.5 2.5"
+        ></a-entity
+        ><!--0.7 mas en z-->
+      </a-entity>
+      <a-entity id="reticle">
+        <a-ring
+          color="teal"
+          radius-inner="0.15"
+          radius-outer="0.2"
+          rotation="-90 0 0"
+        >
+          <a-circle color="teal" radius="0.05"></a-circle>
+        </a-ring>
+      </a-entity>
+      <a-entity
+        xr-tracked-image="element: #hiro; widthInMeters: 0.1; acc: forw"
+        scale="0.1 0.1 0.1"
+      >
+        <a-box
+          position="0 0 0"
+          rotation="0 0 0"
+          scale="0.07 0.07 0.07"
+          color="#4CC3D9"
+          opacity="0.7"
+        ></a-box>
+        <a-entity
+          text="value: Avanzar;"
+          rotation="-90 0 0"
+          position="0.085 0.07 0"
+          scale="0.2 0.2 0.2"
+        ></a-entity>
+      </a-entity>
+      <a-entity
+        xr-tracked-image="element: #forw; widthInMeters: 0.1; acc: forw"
+      >
+        <a-box
+          position="0 0 0"
+          rotation="0 0 0"
+          scale="0.07 0.07 0.07"
+          color="#4CC3D9"
+          opacity="0.7"
+        ></a-box>
+        <a-entity
+          text="value: Avanzar;"
+          rotation="-90 0 0"
+          position="0.085 0.07 0"
+          scale="0.2 0.2 0.2"
+        ></a-entity>
+      </a-entity>
+      <a-entity
+        xr-tracked-image="element: #jump; widthInMeters: 0.1; acc: jump"
+      >
+        <a-box
+          position="0 0 0"
+          rotation="0 0 0"
+          scale="0.07 0.07 0.07"
+          color="#4CC3D9"
+          opacity="0.7"
+        ></a-box>
+        <a-entity
+          text="value: Saltar;"
+          rotation="-90 0 0"
+          position="0.085 0.07 0"
+          scale="0.2 0.2 0.2"
+        ></a-entity>
+      </a-entity>
+      <a-entity
+        xr-tracked-image="element: #left; widthInMeters: 0.1; acc: rotL"
+      >
+        <a-box
+          position="0 0 0"
+          rotation="0 0 0"
+          scale="0.07 0.07 0.07"
+          color="#4CC3D9"
+          opacity="0.7"
+        ></a-box>
+        <a-entity
+          text="value: Girar Izquierda;"
+          rotation="-90 0 0"
+          position="0.066 0.07 0"
+          scale="0.2 0.2 0.2"
+        ></a-entity>
+      </a-entity>
+      <a-entity
+        xr-tracked-image="element: #right; widthInMeters: 0.1; acc: rotR"
+      >
+        <a-box
+          position="0 0 0"
+          rotation="0 0 0"
+          scale="0.07 0.07 0.07"
+          color="#4CC3D9"
+          opacity="0.7"
+        ></a-box>
+        <a-entity
+          text="value: Girar Derecha;"
+          rotation="-90 0 0"
+          position="0.066 0.07 0"
+          scale="0.2 0.2 0.2"
+        ></a-entity>
+      </a-entity>
+      <a-entity
+        xr-tracked-image="element: #goalB; widthInMeters: 0.1; acc: goalB"
+      >
+        <a-box
+          position="0 0 0"
+          rotation="0 0 0"
+          scale="0.07 0.07 0.07"
+          color="green"
+          opacity="0.7"
+          depth="0.2"
+        ></a-box>
+      </a-entity>
+      <a-entity
+        xr-tracked-image="element: #highB; widthInMeters: 0.1; acc: highB"
+      >
+        <a-box
+          position="0 0 0"
+          rotation="0 0 0"
+          scale="0.07 0.07 0.07"
+          color="black"
+          opacity="0.7"
+          depth="2"
+        ></a-box>
+      </a-entity>
+      <a-entity
+        xr-tracked-image="element: #invisB; widthInMeters: 0.1; acc: invisB"
+      >
+        <a-box
+          position="0 0 0"
+          rotation="0 0 0"
+          scale="0.07 0.07 0.07"
+          color="black"
+          opacity="0.2"
+          depth="0.2"
+        ></a-box>
+      </a-entity>
+      <a-entity
+        xr-tracked-image="element: #jumpB; widthInMeters: 0.1; acc: jumpB"
+      >
+        <a-box
+          position="0 0 0"
+          rotation="0 0 0"
+          scale="0.07 0.07 0.07"
+          color="black"
+          opacity="0.7"
+          depth="1"
+        ></a-box>
+      </a-entity>
+      <a-entity
+        xr-tracked-image="element: #normalB; widthInMeters: 0.1; acc: normalB"
+      >
+        <a-box
+          position="0 0 0"
+          rotation="0 0 0"
+          scale="0.07 0.07 0.07"
+          color="black"
+          opacity="0.7"
+          depth="0.2"
+        ></a-box>
+      </a-entity>
+      <!--<a-entity
+        xr-tracked-image="element: #kanji; widthInMeters: 0.1; x: 0; y: 0; z: -1; acc: jump"
+        scale="0.1 0.1 0.1"
+      >
+        <a-box
+          position="0 0 0"
+          rotation="0 0 0"
+          scale="0.07 0.07 0.07"
+          color="#4CC3D9"
+          opacity="0.7"
+        ></a-box>
+        <a-entity
+          text="value: Salto hacia delante;"
+          rotation="-90 0 0"
+          position="0.066 0.07 0"
+          scale="0.2 0.2 0.2"
+        ></a-entity>
+      </a-entity>-->
+    </a-scene>
+    <div id="overlay">
+      <button id="accButton" class="b1" style="display: none;">Accion</button>
+      <button id="mapButton" class="b1">Generar Mapa</button>
+      <button id="editButton" class="b2">Crear Mapa</button>
+      <button id="tileButton" class="b2" style="display: none;">
+        Cambiar casilla
+      </button>
+      <button id="startButton" class="b1" style="display: none;">
+        Empezar Mapa
+      </button>
+    </div>
+  </body>
+</html>
